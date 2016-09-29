@@ -6,11 +6,11 @@ use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
 /**
- * FilePool
+ * AbstractPool
  *
  * @author Kiril Savchev <k.savchev@gmail.com>
  */
-class AbstractPool implements CacheItemPoolInterface {
+abstract class AbstractPool implements CacheItemPoolInterface {
 
         /**
          *
@@ -23,6 +23,12 @@ class AbstractPool implements CacheItemPoolInterface {
          * @var array
          */
         protected $deffered;
+
+        public function __construct(array $items = []) {
+                if ($items) {
+                        $this->items = $items;
+                }
+        }
 
         protected function verifyKey($key) {
                 if (!preg_match('/^[a-z0-9\.\_]{1,64}$/i', $key)) {
