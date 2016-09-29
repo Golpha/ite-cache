@@ -1,0 +1,10 @@
+{
+    "autoload": {
+        "psr-4": {
+            "Ite\\Cache\\": "src/"
+        }
+    },
+    "require": {
+        "psr/cache": "^1.0"
+    }
+}
