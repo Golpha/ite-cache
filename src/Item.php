@@ -27,7 +27,7 @@ class Item implements CacheItemInterface {
          *
          * @var int
          */
-        protected $expiration;
+        protected $expire;
 
         public function __construct($key, $value = null, $expiration = null) {
                 $this->key = $key;
@@ -41,20 +41,20 @@ class Item implements CacheItemInterface {
                 if ($time instanceof \DateInterval) {
                         $now = new \DateTime();
                         $now->add($time);
-                        $this->expiration = $now->getTimestamp();
+                        $this->expire = $now->getTimestamp();
                 }
                 else {
-                        $this->expiration = null;
+                        $this->expire = null;
                 }
                 return $this;
         }
 
         public function expiresAt($expiration) {
                 if ($expiration instanceof \DateTimeInterface) {
-                        $this->expiration = $expiration->getTimestamp();
+                        $this->expire = $expiration->getTimestamp();
                 }
                 else {
-                        $this->expiration = null;
+                        $this->expire = null;
                 }
                 return $this;
         }
@@ -71,7 +71,7 @@ class Item implements CacheItemInterface {
         }
 
         public function isHit() {
-                return $this->expiration === null || time() > $this->expiration;
+                return $this->expire === null || time() < $this->expire;
         }
 
         public function set($value) {

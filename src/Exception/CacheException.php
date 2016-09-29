@@ -2,7 +2,7 @@
 
 namespace Ite\Cache\Exception;
 
-use Ite\Cache\Exception\CacheException as CacheExceptionInterface;
+use Psr\Cache\CacheException as CacheExceptionInterface;
 
 /**
  * CacheException

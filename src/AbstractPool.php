@@ -35,6 +35,8 @@ abstract class AbstractPool implements CacheItemPoolInterface {
          * @param array $items
          */
         public function __construct(array $items = [], $expireTime = null) {
+                $this->items = [];
+                $this->deffered = [];
                 if ($items) {
                         $this->items = $items;
                 }
@@ -163,7 +165,7 @@ abstract class AbstractPool implements CacheItemPoolInterface {
          */
         public function save(CacheItemInterface $item) {
                 if ($item->isHit()) {
-                        $item->expiresAfter(($this->expireTime) ? new \DateInterval('P'.$this->expireTime.'S') : null);
+                        $item->expiresAfter(($this->expireTime) ? new \DateInterval('PT'.$this->expireTime.'S') : null);
                         $this->items[$item->getKey()] = $item;
                 }
                 return $this->hasItem($item->getKey());
