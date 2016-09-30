@@ -16,4 +16,11 @@ interface CachePoolInterface extends CacheItemPoolInterface {
          */
         public function setExpireTime($expireTime);
 
+        /**
+         *
+         * @param string $key
+         * @param mixed $value
+         */
+        public function set($key, $value);
+
 }

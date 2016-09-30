@@ -14,26 +14,36 @@ class FileCacheTests {
          */
         protected $cache;
 
+        /**
+         *
+         * @var CacheItemInterface
+         */
+        protected $item;
+
         public function __construct($expireTime) {
                 $this->cache = new FileContainer();
                 $this->cache->setExpireTime($expireTime);
         }
 
         function getTime() {
-                $item = $this->cache->getItem('check_time');
-                if (!$item->isHit()) {
-                        $item->set(time());
-                        $this->cache->save($item);
+                if (!$this->item) {
+                        $this->item = $this->cache->getItem('check_time');
                 }
-                return $item->get();
+                if (!$this->item->isHit()) {
+                        $this->item->set(time());
+                        $this->cache->save($this->item);
+                }
+                return $this->item->get();
         }
 
 }
 
-$test = new FileCacheTests(5);
+//$expire = 3; // expires in 5 seconds
+$expire = null; // no expire
+$test = new FileCacheTests($expire);
 $cached = $test->getTime();
 echo "Cached value: {$cached}".PHP_EOL;
-sleep(4);
+sleep(2);
 echo "Call from cache: ".($cached === $test->getTime() ? 'true' : 'false').PHP_EOL;
 sleep(2);
 echo "Refresh cache: ".($cached !== $test->getTime() ? 'true' : 'false').PHP_EOL;

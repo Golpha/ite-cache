@@ -81,7 +81,7 @@ class FileContainer extends AbstractPool {
                 $item = parent::getItem($key);
                 $file = $this->cacheDir.DIRECTORY_SEPARATOR.$key;
                 if (file_exists($file)) {
-                        if ($this->expireTime !== null && filectime($file) + $this->expireTime < time()) {
+                        if ($this->expireTime > 0 && filectime($file) + $this->expireTime < time()) {
                                 $this->deleteItem($key);
                                 $item = new Item($key);
                                 $this->saveDeferred($item);

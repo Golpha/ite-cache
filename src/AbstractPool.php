@@ -12,19 +12,22 @@ use Psr\Cache\CacheItemInterface;
 abstract class AbstractPool implements CachePoolInterface {
 
         /**
+         * Saved cached items
          *
          * @var array
          */
         protected $items;
 
         /**
+         * Deffered items to be cached
          *
          * @var array
          */
         protected $deffered;
 
         /**
-         *
+         * Item's lifetime
+         * 
          * @var int
          */
         protected $expireTime;
@@ -32,7 +35,7 @@ abstract class AbstractPool implements CachePoolInterface {
         /**
          *
          * @param array $items
-         * @param int $expireTime
+         * @param int|\DateInterval|null $expireTime
          */
         public function __construct(array $items = [], $expireTime = null) {
                 $this->items = [];
@@ -40,7 +43,7 @@ abstract class AbstractPool implements CachePoolInterface {
                 if ($items) {
                         $this->items = $items;
                 }
-                $this->expireTime = $expireTime;
+                $this->setExpireTime($expireTime);
         }
 
         /**
@@ -128,7 +131,6 @@ abstract class AbstractPool implements CachePoolInterface {
                         $item = new Item($key);
                         $this->deffered[$key] = $item;
                 }
-                $item->expiresAfter($this->expireTime);
                 return $item;
         }
 
@@ -166,10 +168,8 @@ abstract class AbstractPool implements CachePoolInterface {
          * @return bool
          */
         public function save(CacheItemInterface $item) {
-                if ($item->isHit()) {
-                        $item->expiresAfter($this->expireTime);
-                        $this->items[$item->getKey()] = $item;
-                }
+                $item->expiresAfter($this->expireTime);
+                $this->items[$item->getKey()] = $item;
                 return $this->hasItem($item->getKey());
         }
 
@@ -195,6 +195,17 @@ abstract class AbstractPool implements CachePoolInterface {
                 else if (is_int($expireTime) || is_null($expireTime)) {
                         $this->expireTime = $expireTime;
                 }
+                return $this;
+        }
+        /**
+         * Short method of creating item and saving it
+         *
+         * @param string $key
+         * @param mixed $value
+         * @return \Ite\Cache\AbstractPool
+         */
+        public function set($key, $value) {
+                $this->save(new Item($key, $value));
                 return $this;
         }
 
