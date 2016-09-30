@@ -32,6 +32,7 @@ abstract class AbstractPool implements CachePoolInterface {
         /**
          *
          * @param array $items
+         * @param int $expireTime
          */
         public function __construct(array $items = [], $expireTime = null) {
                 $this->items = [];

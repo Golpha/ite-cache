@@ -21,11 +21,12 @@ class FileContainer extends AbstractPool {
 
         /**
          *
-         * @param array $items
          * @param string $cacheDir
+         * @param int $expireTime
+         * @param array $items
          * @throws CacheException
          */
-        public function __construct(array $items = [], $expireTime = null, $cacheDir = '') {
+        public function __construct($cacheDir = '', $expireTime = null, array $items = []) {
                 if (!$cacheDir) {
                         $this->cacheDir = realpath(__DIR__.'/../cache');
                 }
@@ -58,6 +59,11 @@ class FileContainer extends AbstractPool {
                 }
         }
 
+        /**
+         *
+         * @param string $key
+         * @return bool
+         */
         public function deleteItem($key) {
                 $path = $this->cacheDir.DIRECTORY_SEPARATOR.$key;
                 if (file_exists($path)) {
@@ -66,11 +72,11 @@ class FileContainer extends AbstractPool {
                 return parent::deleteItem($key);
         }
 
-        protected function cleanExpired(CacheItemInterface $item) {
-
-                return false;
-        }
-
+        /**
+         *
+         * @param string $key
+         * @return \Ite\Cache\Item
+         */
         public function getItem($key) {
                 $item = parent::getItem($key);
                 $file = $this->cacheDir.DIRECTORY_SEPARATOR.$key;

@@ -29,14 +29,30 @@ class Item implements CacheItemInterface {
          */
         protected $expire;
 
+        /**
+         *
+         * @param string $key [Optional]
+         * @param mixed $value [Optional]
+         * @param int|null|\DateTimeInterface|\DateInterval $expiration [Optional]
+         */
         public function __construct($key, $value = null, $expiration = null) {
                 $this->key = $key;
                 $this->value = $value;
                 if ($expiration) {
-                        $this->expiresAt($expiration);
+                        if ($expiration instanceof \DateTimeInterface) {
+                                $this->expiresAt($expiration);
+                        }
+                        else {
+                                $this->expiresAfter($expiration);
+                        }
                 }
         }
 
+        /**
+         *
+         * @param \DateInterval $time
+         * @return \Ite\Cache\Item
+         */
         public function expiresAfter($time) {
                 if ($time instanceof \DateInterval) {
                         $now = new \DateTime();
