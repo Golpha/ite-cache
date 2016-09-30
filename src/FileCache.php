@@ -72,6 +72,17 @@ class FileCache extends AbstractPool {
                 return parent::deleteItem($key);
         }
 
+        public function clear() {
+                $result = parent::clear();
+                if ($result) {
+                        $files = glob($this->cacheDir.DIRECTORY_SEPARATOR.'*');
+                        foreach ($files as $file) {
+                                unlink($file);
+                        }
+                }
+                return $result;
+        }
+
         /**
          *
          * @param string $key

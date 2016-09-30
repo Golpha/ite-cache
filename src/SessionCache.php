@@ -46,6 +46,14 @@ class SessionCache extends AbstractPool {
                 return $result;
         }
 
+        public function clear() {
+                $result = parent::clear();
+                if ($result) {
+                        $_SESSION[$this->sessionKey] = [];
+                }
+                return $result;
+        }
+
         public function getItem($key) {
                 $item = parent::getItem($key);
                 if (array_key_exists($key, $_SESSION[$this->sessionKey])) {
