@@ -38,8 +38,8 @@ class FileCacheTests {
 
 }
 
-//$expire = 3; // expires in 5 seconds
-$expire = null; // no expire
+$expire = 3; // expires in 5 seconds
+//$expire = null; // no expire
 $test = new FileCacheTests($expire);
 $cached = $test->getTime();
 echo "Cached value: {$cached}".PHP_EOL;
