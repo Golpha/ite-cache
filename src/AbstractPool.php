@@ -3,14 +3,13 @@
 namespace Ite\Cache;
 
 use Psr\Cache\CacheItemInterface;
-use Psr\Cache\CacheItemPoolInterface;
 
 /**
  * AbstractPool
  *
  * @author Kiril Savchev <k.savchev@gmail.com>
  */
-abstract class AbstractPool implements CacheItemPoolInterface {
+abstract class AbstractPool implements CachePoolInterface {
 
         /**
          *
@@ -70,7 +69,6 @@ abstract class AbstractPool implements CacheItemPoolInterface {
          */
         public function commit() {
                 $result = true;
-                $commited = [];
                 foreach ($this->deffered as $item) {
                         $result = $this->save($item) && $result;
                         if ($result) {
@@ -120,14 +118,17 @@ abstract class AbstractPool implements CacheItemPoolInterface {
         public function getItem($key) {
                 $this->verifyKey($key);
                 if (array_key_exists($key, $this->items)) {
-                        return $this->items[$key];
+                        $item = $this->items[$key];
                 }
                 else if (array_key_exists($key, $this->deffered)) {
-                        return $this->deffered[$key];
+                        $item = $this->deffered[$key];
                 }
                 else {
-                        return null;
+                        $item = new Item($key);
+                        $this->deffered[$key] = $item;
                 }
+                $item->expiresAfter($this->expireTime);
+                return $item;
         }
 
         /**
@@ -165,7 +166,7 @@ abstract class AbstractPool implements CacheItemPoolInterface {
          */
         public function save(CacheItemInterface $item) {
                 if ($item->isHit()) {
-                        $item->expiresAfter(($this->expireTime) ? new \DateInterval('PT'.$this->expireTime.'S') : null);
+                        $item->expiresAfter($this->expireTime);
                         $this->items[$item->getKey()] = $item;
                 }
                 return $this->hasItem($item->getKey());
@@ -179,6 +180,21 @@ abstract class AbstractPool implements CacheItemPoolInterface {
         public function saveDeferred(CacheItemInterface $item) {
                 $this->deffered[$item->getKey()] = $item;
                 return $this->hasItem($item->getKey());
+        }
+
+        /**
+         *
+         * @param null|int|\DateInterval $expireTime
+         * @return \Ite\Cache\AbstractPool
+         */
+        public function setExpireTime($expireTime) {
+                if ($expireTime instanceof \DateInterval) {
+                        $this->expireTime = $expireTime->s;
+                }
+                else if (is_int($expireTime) || is_null($expireTime)) {
+                        $this->expireTime = $expireTime;
+                }
+                return $this;
         }
 
 }

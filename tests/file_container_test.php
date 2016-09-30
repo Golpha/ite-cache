@@ -1,29 +1,39 @@
 <?php
 
+use Ite\Cache\FileContainer;
+
 chdir(realpath(__DIR__.'/..'));
 
 require_once './vendor/autoload.php';
 
 class FileCacheTests {
 
+        /**
+         *
+         * @var FileContainer
+         */
         protected $cache;
 
-        public function __construct() {
-                $this->cache = new Ite\Cache\FileContainer([], 5);
+        public function __construct($expireTime) {
+                $this->cache = new FileContainer();
+                $this->cache->setExpireTime($expireTime);
         }
 
-        function get_time() {
-                $this->cache->getItem('asd', time());
-                $this->cache->commit();
-                var_dump($this->cache->getItem('asd')->get());
+        function getTime() {
+                $item = $this->cache->getItem('check_time');
+                if (!$item->isHit()) {
+                        $item->set(time());
+                        $this->cache->save($item);
+                }
+                return $item->get();
         }
 
 }
 
-$test = new FileCacheTests;
-
-$test->get_time();
+$test = new FileCacheTests(5);
+$cached = $test->getTime();
+echo "Cached value: {$cached}".PHP_EOL;
 sleep(4);
-$test->get_time();
+echo "Call from cache: ".($cached === $test->getTime() ? 'true' : 'false').PHP_EOL;
 sleep(2);
-$test->get_time();
+echo "Refresh cache: ".($cached !== $test->getTime() ? 'true' : 'false').PHP_EOL;

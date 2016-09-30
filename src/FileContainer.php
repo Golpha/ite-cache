@@ -58,38 +58,31 @@ class FileContainer extends AbstractPool {
                 }
         }
 
-        public function delete(CacheItemInterface $item) {
-                $path = $this->cacheDir.DIRECTORY_SEPARATOR.$item->getKey();
-                return (!file_exists($path) || unlink($path));
+        public function deleteItem($key) {
+                $path = $this->cacheDir.DIRECTORY_SEPARATOR.$key;
+                if (file_exists($path)) {
+                        unlink($path);
+                }
+                return parent::deleteItem($key);
         }
 
-        public function getItem($key, $value = '') {
+        protected function cleanExpired(CacheItemInterface $item) {
+
+                return false;
+        }
+
+        public function getItem($key) {
                 $item = parent::getItem($key);
-                if (!($item instanceof Item)) {
-                        var_dump("Line: ".__LINE__);
-                        $file = $this->cacheDir.DIRECTORY_SEPARATOR.$key;
-                        if (file_exists($file)) {
-                                if ($this->expireTime !== null && filectime($file) + $this->expireTime < time()) {
-                                        unlink($file);
-                                        $item = new Item($key, $value);
-                                        $this->saveDeferred($item);
-                                }
-                                else {
-                                        $item = new Item($key, unserialize(file_get_contents($file)));
-                                        $item->expiresAfter(($this->expireTime) ? new \DateInterval('PT'.$this->expireTime.'S') : null);
-                                        $this->items[$key] = $item;
-                                }
-                        }
-                        else {
-                                $item = new Item($key, $value);
+                $file = $this->cacheDir.DIRECTORY_SEPARATOR.$key;
+                if (file_exists($file)) {
+                        if ($this->expireTime !== null && filectime($file) + $this->expireTime < time()) {
+                                $this->deleteItem($key);
+                                $item = new Item($key);
                                 $this->saveDeferred($item);
                         }
-                }
-                else if (!$item->isHit()) {
-                        var_dump("Line: ".__LINE__);
-                        $this->delete($item);
-                        $item = new Item($key, $value);
-                        $this->saveDeferred($item);
+                        else {
+                                $item->set(unserialize(file_get_contents($file)));
+                        }
                 }
                 return $item;
         }

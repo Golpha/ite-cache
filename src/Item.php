@@ -43,8 +43,11 @@ class Item implements CacheItemInterface {
                         $now->add($time);
                         $this->expire = $now->getTimestamp();
                 }
-                else {
+                else if ($time === null) {
                         $this->expire = null;
+                }
+                else {
+                        $this->expire = time() + $time;
                 }
                 return $this;
         }
@@ -60,9 +63,6 @@ class Item implements CacheItemInterface {
         }
 
         public function get() {
-                if (!$this->isHit()) {
-                        return null;
-                }
                 return $this->value;
         }
 
@@ -71,7 +71,7 @@ class Item implements CacheItemInterface {
         }
 
         public function isHit() {
-                return $this->expire === null || time() < $this->expire;
+                return $this->expire !== null && time() < $this->expire;
         }
 
         public function set($value) {
