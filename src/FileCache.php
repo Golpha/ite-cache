@@ -6,11 +6,11 @@ use Ite\Cache\Exception\CacheException;
 use Psr\Cache\CacheItemInterface;
 
 /**
- * FilePool
+ * FileCache
  *
  * @author Kiril Savchev <k.savchev@gmail.com>
  */
-class FileContainer extends AbstractPool {
+class FileCache extends AbstractPool {
 
 
         /**

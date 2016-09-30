@@ -6,11 +6,11 @@ use Ite\Cache\Exception\InvalidArgumentException;
 use Psr\Cache\CacheItemInterface;
 
 /**
- * SessionContainer
+ * SessionCache
  *
  * @author Kiril Savchev <k.savchev@gmail.com>
  */
-class SessionContainer extends AbstractPool {
+class SessionCache extends AbstractPool {
 
         protected $sessionKey;
 

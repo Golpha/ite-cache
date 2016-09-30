@@ -1,17 +1,16 @@
 <?php
 
-use Ite\Cache\SessionContainer;
-use Psr\Cache\CacheItemInterface;
+use Ite\Cache\FileCache;
 
 chdir(realpath(__DIR__.'/..'));
 
 require_once './vendor/autoload.php';
 
-class SessionCacheTests {
+class FileCacheTests {
 
         /**
          *
-         * @var SessionContainer
+         * @var FileCache
          */
         protected $cache;
 
@@ -22,12 +21,14 @@ class SessionCacheTests {
         protected $item;
 
         public function __construct($expireTime) {
-                $this->cache = new SessionContainer();
+                $this->cache = new FileCache();
                 $this->cache->setExpireTime($expireTime);
         }
 
         function getTime() {
-                $this->item = $this->cache->getItem('check_time');
+                if (!$this->item) {
+                        $this->item = $this->cache->getItem('check_time');
+                }
                 if (!$this->item->isHit()) {
                         $this->item->set(time());
                         $this->cache->save($this->item);
@@ -37,12 +38,12 @@ class SessionCacheTests {
 
 }
 
-$expire = 3; // expires in 5 seconds
-//$expire = null; // no expire
-$test = new SessionCacheTests($expire);
+//$expire = 3; // expires in 5 seconds
+$expire = null; // no expire
+$test = new FileCacheTests($expire);
 $cached = $test->getTime();
-echo "Cached value: {$cached}<br />";
+echo "Cached value: {$cached}".PHP_EOL;
 sleep(2);
-echo "Call from cache: ".($cached === $test->getTime() ? 'true' : 'false').'<br />';
+echo "Call from cache: ".($cached === $test->getTime() ? 'true' : 'false').PHP_EOL;
 sleep(2);
-echo "Refresh cache: ".($cached !== $test->getTime() ? 'true' : 'false').'<br />';
+echo "Refresh cache: ".($cached !== $test->getTime() ? 'true' : 'false').PHP_EOL;
