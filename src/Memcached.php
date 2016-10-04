@@ -73,13 +73,6 @@ class Memcached extends AbstractPool {
                 if (!count($this->memcached->getServerList())) {
                         $this->memcached->addServers($this->servers);
                 }
-                $storedKeys = $this->memcached->getAllKeys();
-                $this->clear();
-                if ($storedKeys) {
-                        foreach ($storedKeys as $key) {
-                                $this->getItem($key);
-                        }
-                }
         }
 
         /**
@@ -191,8 +184,9 @@ class Memcached extends AbstractPool {
                         }
                 }
                 $item = parent::getItem($key);
-                if ($item->get() !== $cached) {
+                if (!$item->isHit()) {
                         $item->set($cached);
+                        $item->expiresAfter($this->expireTime);
                 }
                 return $item;
         }
