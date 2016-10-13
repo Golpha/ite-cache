@@ -1,0 +1,143 @@
+<?php
+
+/**
+ * FileCache file
+ *
+ * Copyright (c) 2016, Kiril Savchev
+ * All rights reserved.
+ *
+ * @category Libs
+ * @package Cache
+ *
+ * @author Kiril Savchev <k.savchev@gmail.com>
+ *
+ * @license http://www.apache.org/licenses/ Apache License 2.0
+ * @link http://ifthenelse.info
+ */
+namespace Ite\Cache;
+
+use Ite\Cache\Exception\CacheException;
+use Psr\Cache\CacheItemInterface;
+
+/**
+ * FileCache adapter
+ *
+ * Stores and loads values in files
+ *
+ * @version 1.0
+ *
+ * @author Kiril Savchev <k.savchev@gmail.com>
+ */
+class FileCache extends AbstractPool {
+
+
+        /**
+         * Directory with the files witch store the values
+         *
+         * @var string
+         */
+        protected $cacheDir;
+
+        /**
+         * Creates new file cache adapter
+         *
+         * @param string $cacheDir [Optional] The caching directory
+         * @param int $expireTime [Optional] The expire time
+         * @param array $items [Optional] Cache items
+         * @throws CacheException If the cache directory not exists, neither a directory nor is writable
+         */
+        public function __construct($cacheDir = '', $expireTime = null, array $items = []) {
+                if (!$cacheDir) {
+                        $this->cacheDir = realpath(__DIR__.'/../cache');
+                }
+                else {
+                        $this->cacheDir = $cacheDir;
+                }
+                if (!file_exists($this->cacheDir)) {
+                        throw new CacheException("Cache directory does not exists");
+                }
+                if (!is_dir($this->cacheDir)) {
+                        throw new CacheException("Cache directory is not a directory");
+                }
+                if (!is_writable($this->cacheDir)) {
+                        throw new CacheException("Cache directory is not writable");
+                }
+                parent::__construct($items, $expireTime);
+        }
+
+        /**
+         * Saves item's value to file
+         *
+         * The value is always serialized when before is stored to the file
+         *
+         * @param CacheItemInterface $item The cache item
+         * @return boolean True on success, otherwise false
+         */
+        public function save(CacheItemInterface $item) {
+                if (file_put_contents($this->cacheDir.DIRECTORY_SEPARATOR.$item->getKey(), serialize($item->get()))) {
+                        return parent::save($item);
+                }
+                else {
+                        return false;
+                }
+        }
+
+        /**
+         * Deletes a file with cache value presented with a key
+         *
+         * @param string $key The item key
+         * @return bool True on success, otherwise false
+         */
+        public function deleteItem($key) {
+                $path = $this->cacheDir.DIRECTORY_SEPARATOR.$key;
+                if (file_exists($path)) {
+                        unlink($path);
+                }
+                return parent::deleteItem($key);
+        }
+
+        /**
+         * Clears the cache directory
+         *
+         * @return bool True on success, otherwise false
+         */
+        public function clear() {
+                $result = parent::clear();
+                if ($result) {
+                        $files = glob($this->cacheDir.DIRECTORY_SEPARATOR.'*');
+                        foreach ($files as $file) {
+                                unlink($file);
+                        }
+                }
+                return $result;
+        }
+
+        /**
+         * Retrieve cached value from file and return it like na cache item
+         *
+         * If a file with such key does not exists it will return an empty item
+         * with null value and no expire time. If the file is expired, e.g. its
+         * modification time + the expire time is in the past, an empty item will
+         * be created and will be stored as a deffered item.
+         *
+         * @param string $key The item key
+         * @return \Ite\Cache\Item The stored or newly created cache item
+         */
+        public function getItem($key) {
+                $item = parent::getItem($key);
+                $file = $this->cacheDir.DIRECTORY_SEPARATOR.$key;
+                if (file_exists($file)) {
+                        if ($this->expireTime > 0 && filemtime($file) + $this->expireTime < time()) {
+                                $this->deleteItem($key);
+                                $item = new Item($key);
+                                $this->saveDeferred($item);
+                        }
+                        else {
+                                $item->set(unserialize(file_get_contents($file)));
+                        }
+                }
+                return $item;
+        }
+
+}
+
