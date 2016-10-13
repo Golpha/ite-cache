@@ -1,11 +1,32 @@
 <?php
 
+/**
+ * Memcached file
+ *
+ * Copyright (c) 2016, Kiril Savchev
+ * All rights reserved.
+ *
+ * @category Libs
+ * @package Cache
+ *
+ * @author Kiril Savchev <k.savchev@gmail.com>
+ *
+ * @license http://www.apache.org/licenses/ Apache License 2.0
+ * @link http://ifthenelse.info
+ */
 namespace Ite\Cache;
 
 use Psr\Cache\CacheItemInterface;
 
 /**
  * Memcached Wrapper
+ *
+ * This cache adapter wraps a memcached object to be compliant with
+ * PSR6 Cache
+ *
+ * @version 1.0
+ *
+ * @uses \Memcached The native PHP memcached extension
  *
  * @author Kiril Savchev <k.savchev@gmail.com>
  */
@@ -203,7 +224,7 @@ class Memcached extends AbstractPool {
         /**
          * Resets the server list
          *
-         * @return boolean
+         * @return boolean True on success, otherwise false
          */
         public function resetServerList() {
                 if ($this->memcached->resetServerList()) {
@@ -224,7 +245,7 @@ class Memcached extends AbstractPool {
          * whether the item is get from the pull or is newly created one.
          *
          * @param string $key The item's key
-         * @return CcacheItemInterface
+         * @return CcacheItemInterface The cached or newly created item
          * @throws Exception\CacheException
          */
         public function getItem($key) {

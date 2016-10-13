@@ -1,12 +1,30 @@
 <?php
 
+/**
+ * FileCache file
+ *
+ * Copyright (c) 2016, Kiril Savchev
+ * All rights reserved.
+ *
+ * @category Libs
+ * @package Cache
+ *
+ * @author Kiril Savchev <k.savchev@gmail.com>
+ *
+ * @license http://www.apache.org/licenses/ Apache License 2.0
+ * @link http://ifthenelse.info
+ */
 namespace Ite\Cache;
 
 use Ite\Cache\Exception\CacheException;
 use Psr\Cache\CacheItemInterface;
 
 /**
- * FileCache
+ * FileCache adapter
+ *
+ * Stores and loads values in files
+ *
+ * @version 1.0
  *
  * @author Kiril Savchev <k.savchev@gmail.com>
  */
@@ -14,17 +32,19 @@ class FileCache extends AbstractPool {
 
 
         /**
+         * Directory with the files witch store the values
          *
          * @var string
          */
         protected $cacheDir;
 
         /**
+         * Creates new file cache adapter
          *
-         * @param string $cacheDir
-         * @param int $expireTime
-         * @param array $items
-         * @throws CacheException
+         * @param string $cacheDir [Optional] The caching directory
+         * @param int $expireTime [Optional] The expire time
+         * @param array $items [Optional] Cache items
+         * @throws CacheException If the cache directory not exists, neither a directory nor is writable
          */
         public function __construct($cacheDir = '', $expireTime = null, array $items = []) {
                 if (!$cacheDir) {
@@ -46,9 +66,12 @@ class FileCache extends AbstractPool {
         }
 
         /**
+         * Saves item's value to file
          *
-         * @param CacheItemInterface $item
-         * @return boolean
+         * The value is always serialized when before is stored to the file
+         *
+         * @param CacheItemInterface $item The cache item
+         * @return boolean True on success, otherwise false
          */
         public function save(CacheItemInterface $item) {
                 if (file_put_contents($this->cacheDir.DIRECTORY_SEPARATOR.$item->getKey(), serialize($item->get()))) {
@@ -60,9 +83,10 @@ class FileCache extends AbstractPool {
         }
 
         /**
+         * Deletes a file with cache value presented with a key
          *
-         * @param string $key
-         * @return bool
+         * @param string $key The item key
+         * @return bool True on success, otherwise false
          */
         public function deleteItem($key) {
                 $path = $this->cacheDir.DIRECTORY_SEPARATOR.$key;
@@ -72,6 +96,11 @@ class FileCache extends AbstractPool {
                 return parent::deleteItem($key);
         }
 
+        /**
+         * Clears the cache directory
+         *
+         * @return bool True on success, otherwise false
+         */
         public function clear() {
                 $result = parent::clear();
                 if ($result) {
@@ -84,9 +113,15 @@ class FileCache extends AbstractPool {
         }
 
         /**
+         * Retrieve cached value from file and return it like na cache item
          *
-         * @param string $key
-         * @return \Ite\Cache\Item
+         * If a file with such key does not exists it will return an empty item
+         * with null value and no expire time. If the file is expired, e.g. its
+         * modification time + the expire time is in the past, an empty item will
+         * be created and will be stored as a deffered item.
+         *
+         * @param string $key The item key
+         * @return \Ite\Cache\Item The stored or newly created cache item
          */
         public function getItem($key) {
                 $item = parent::getItem($key);

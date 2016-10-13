@@ -1,11 +1,29 @@
 <?php
 
+/**
+ * Item file
+ *
+ * Copyright (c) 2016, Kiril Savchev
+ * All rights reserved.
+ *
+ * @category Libs
+ * @package Cache
+ *
+ * @author Kiril Savchev <k.savchev@gmail.com>
+ *
+ * @license http://www.apache.org/licenses/ Apache License 2.0
+ * @link http://ifthenelse.info
+ */
 namespace Ite\Cache;
 
 use Psr\Cache\CacheItemInterface;
 
 /**
- * Item
+ * Item class
+ *
+ * The implementation of PSR CacheItemInterface
+ *
+ * @version 1.0
  *
  * @author Kiril Savchev <k.savchev@gmail.com>
  */
@@ -33,9 +51,10 @@ class Item implements CacheItemInterface {
         protected $expire;
 
         /**
+         * Creates new cache item
          *
-         * @param string $key
-         * @param mixed $value [Optional]
+         * @param string $key The item's key
+         * @param mixed $value [Optional] The item's value
          */
         public function __construct($key, $value = null) {
                 $this->key = $key;

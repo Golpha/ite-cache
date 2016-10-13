@@ -1,9 +1,29 @@
 <?php
 
+/**
+ * CacheStrategyFactory file
+ *
+ * Copyright (c) 2016, Kiril Savchev
+ * All rights reserved.
+ *
+ * @category Libs
+ * @package Cache
+ *
+ * @author Kiril Savchev <k.savchev@gmail.com>
+ *
+ * @license http://www.apache.org/licenses/ Apache License 2.0
+ * @link http://ifthenelse.info
+ */
 namespace Ite\Cache;
+
+use Ite\Cache\Exception\CacheException;
 
 /**
  * CacheStrategyFactory
+ *
+ * Creates a cache adapter based on provided parameters and registered stragies
+ *
+ * @version 1.0
  *
  * @author Kiril Savchev
  */
@@ -18,6 +38,11 @@ class CacheStrategyFactory {
          * Seconds in one day
          */
         const DAY = 86400;
+
+        /**
+         * Seconds in 30 days
+         */
+        const MONTH = 2592000;
 
         /**
          * Expire key for parameters
@@ -40,18 +65,25 @@ class CacheStrategyFactory {
                 'session' => [
                         'class' => SessionCache::class,
                         'params' => [
-                                'session_key' => 'session_cache',
+                                'session_key' => 'ite_session_cache',
                                 'expire' => self::HOUR
+                        ]
+                ],
+                'memcached' => [
+                        'class' => Memcached::class,
+                        'params' => [
+                                'persistentId' => 'ite_memcached_persistent',
+                                'expire' => self::MONTH
                         ]
                 ]
 
         ];
 
         /**
-         * registered strategy to internal container
+         * Registere strategy to internal container
          *
-         * @param string $name
-         * @param array|string $params
+         * @param string $name Strategy name
+         * @param array|string $params Adapter parameters
          * @throws Exception\InvalidArgumentException
          */
         public static function addStrategy($name, $params) {
@@ -74,8 +106,9 @@ class CacheStrategyFactory {
 
         /**
          * Checks whether a strategy is registered
-         * @param string $name
-         * @return bool
+         *
+         * @param string $name Strategy name
+         * @return bool True if exists, otherwise false
          */
         public static function hasStrategy($name) {
                 return array_key_exists($name, static::$cacheStrategies);
@@ -84,7 +117,7 @@ class CacheStrategyFactory {
         /**
          * Unregister strategy
          *
-         * @param string $name
+         * @param string $name Strategy name
          */
         public static function removeStrategy($name) {
                 if (static::hasStrategy($name)) {
@@ -95,8 +128,8 @@ class CacheStrategyFactory {
         /**
          * Dynamic alias of self::addStrategy()
          *
-         * @param string $name
-         * @param array|string $params
+         * @param string $name Strategy name
+         * @param array|string $params Strategy parameters
          */
         public function addCacheStrategy($name, $params) {
                 static::addStrategy($name, $params);
@@ -105,8 +138,8 @@ class CacheStrategyFactory {
         /**
          * Dynamic alias of self::hasStrategy()
          *
-         * @param string $name
-         * @return bool
+         * @param string $name Strategy name
+         * @return bool True if exists, otherwise false
          */
         public function hasCacheStrategy($name) {
                 return static::hasStrategy($name);
@@ -115,7 +148,7 @@ class CacheStrategyFactory {
         /**
          * Dynamic alias of self::removeStrategy()
          *
-         * @param string $name
+         * @param string $name Strategy name
          */
         public function removeCacheStrategy($name) {
                 static::removeStrategy($name);
@@ -131,7 +164,7 @@ class CacheStrategyFactory {
          * @return \Psr\Cache\CachePoolInterface
          *
          * @throws Exception\InvalidArgumentException If the wanted strategy is not registered or is with invalid parameters
-         * @throws Exception\CacheException If the pool class is not a valid PSR-6 item pool class
+         * @throws CacheException If the pool class is not a valid PSR-6 item pool class
          */
         public function create($name, array $params = []) {
                 if (!array_key_exists($name, static::$cacheStrategies)) {
@@ -143,7 +176,7 @@ class CacheStrategyFactory {
                 }
                 $reflection = new \ReflectionClass($strategyParams['class']);
                 if (!$reflection->implementsInterface('Psr\Cache\CacheItemPoolInterface')) {
-                        throw new Exception\CacheException("Invalid cache strategy");
+                        throw new CacheException("Invalid cache strategy");
                 }
                 if (array_key_exists('params', $strategyParams)) {
                         $defaultParams = $strategyParams['params'];
