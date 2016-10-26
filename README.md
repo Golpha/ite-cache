@@ -8,35 +8,39 @@ expired.
 
 ### Example
 ```php
-    <?php
+<?php
 
-    use Ite\Cache\FileContainer;
+use Ite\Cache\FileContainer;
 
-    chdir(realpath(__DIR__.'/..'));
+chdir(realpath(__DIR__.'/..'));
 
-    require_once './vendor/autoload.php';
+require_once 'vendor/autoload.php';
 
-    class FileCacheTests {
+class FileCacheTests {
 
-            /**
-             *
-             * @var FileContainer
-             */
-        protected $cache;
+    /**
+     *
+     * @var FileContainer
+     */
+    protected $cache;
 
-        public function __construct($expireTime) {
-                $this->cache = new FileContainer();
-                $this->cache->setExpireTime($expireTime);
-        }
+    public function __construct($expireTime) 
+    {
+            $this->cache = new FileContainer();
+            $this->cache->setExpireTime($expireTime);
+    }
 
-        function getTime() {
-                $item = $this->cache->getItem('check_time');
-                if (!$item->isHit()) {
-                        $item->set(time());
-                        $this->cache->save($item);
-                }
-                return $item->get();
-        }
+    function getTime() 
+    {
+            $item = $this->cache->getItem('check_time');
+            
+            if (!$item->isHit()) {
+                    $item->set(time());
+                    $this->cache->save($item);
+            }
+            
+            return $item->get();
+    }
 
 }
 
@@ -78,17 +82,21 @@ class SessionCacheTests {
          */
         protected $item;
 
-        public function __construct($expireTime) {
+        public function __construct($expireTime) 
+        {
                 $this->cache = new SessionContainer();
                 $this->cache->setExpireTime($expireTime);
         }
 
-        function getTime() {
+        function getTime() 
+        {
                 $this->item = $this->cache->getItem('check_time');
+                
                 if (!$this->item->isHit()) {
                         $this->item->set(time());
                         $this->cache->save($this->item);
                 }
+                
                 return $this->item->get();
         }
 
@@ -128,21 +136,26 @@ class MemcachedTests {
          */
         protected $item;
 
-        public function __construct($expireTime) {
+        public function __construct($expireTime) 
+        {
                 $this->cache = new Ite\Cache\Memcached(['localhost', 11211], 'testsMemcached');
+                
                 if ($expireTime) {
                         $this->cache->setExpireTime($expireTime);
                 }
         }
 
-        function getTime() {
+        function getTime() 
+        {
                 if (!$this->item) {
                         $this->item = $this->cache->getItem('check_time');
                 }
+                
                 if (!$this->item->isHit()) {
                         $this->item->set(time());
                         $this->cache->save($this->item);
                 }
+                
                 return $this->item->get();
         }
 
